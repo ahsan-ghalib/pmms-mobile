@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo } from 'react';
+import { ComponentProps, Fragment, ReactNode, useMemo } from 'react';
 import {
   Pressable,
   RefreshControl,
@@ -14,7 +14,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { ApiError } from '../../lib/api';
 import { useAuth } from '../auth/AuthContext';
+import { Category } from '../create/useCreateData';
+import CategoryGrid from './CategoryGrid';
 import { homeCopy } from './homeCopy';
+import { HomeSection, homeSectionsFor } from './homeLayout';
+import PromoCarousel, { BannerAction } from './PromoCarousel';
 import RequestRow from './RequestRow';
 import SupportIllustration from './SupportIllustration';
 import {
@@ -46,7 +50,7 @@ type Props = {
   onOpenRequest: (id: string) => void;
   onOpenNotifications: () => void;
   onComingSoon: () => void;
-  onCreateRequest: () => void;
+  onCreateRequest: (category?: Category) => void;
   onEmergency: () => void;
 };
 
@@ -61,7 +65,7 @@ export default function HomeScreen({
 }: Props) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { language, isAr, font, row, align } = useLanguage();
+  const { language, setLanguage, isAr, font, row, align } = useLanguage();
   const { user } = useAuth();
   const copy = homeCopy[language];
 
@@ -79,13 +83,27 @@ export default function HomeScreen({
     [list],
   );
   const visit = useMemo(() => upcomingVisit(list), [list]);
-  const hasUnread = (notifications.data ?? []).some((item) => !item.read_at);
+  const unreadCount = (notifications.data ?? []).filter((item) => !item.read_at).length;
   const locked = complaints.error instanceof ApiError && complaints.error.status === 403;
+  const sections = homeSectionsFor(user?.role);
 
   const property = context.data?.default?.property?.name;
   const unit = context.data?.default?.unit?.name;
-  const locationLabel = [property, unit].filter(Boolean).join(' • ') || copy.noProperty;
+  const locationLabel = [unit, property].filter(Boolean).join(', ') || copy.noProperty;
   const firstName = (user?.name || '').split(' ')[0];
+  const initials = (user?.name || '?')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+  const avatarUri = user?.avatar && /^https?:\/\//.test(user.avatar) ? user.avatar : null;
+
+  const bannerAction = (action: BannerAction) => {
+    if (action === 'create') onCreateRequest();
+    else if (action === 'emergency') onEmergency();
+    else onOpenRequests();
+  };
 
   const refreshing = complaints.isRefetching || context.isRefetching || notifications.isRefetching;
   const refresh = () => {
@@ -95,136 +113,122 @@ export default function HomeScreen({
   };
 
   const heroWidth = Math.min(width * 0.38, 170);
+  const heroHeight = heroWidth * 1.27;
   const heroSide = isAr ? { left: -width * 0.04 } : { right: -width * 0.04 };
   const chevron: IconName = isAr ? 'chevron-back' : 'chevron-forward';
 
-  return (
-    <View className="flex-1 bg-[#F6F9FE]">
-      <LinearGradient
-        colors={['#E4EFFE', '#F6F9FE']}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360 }}
-      />
-      <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: bottomInset + 24 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#2F80F0" />
-        }
-      >
-        <Image
-          source={heroImage}
-          contentFit="contain"
-          style={{
-            position: 'absolute',
-            top: insets.top + 50,
-            width: heroWidth,
-            height: heroWidth * 1.27,
-            ...heroSide,
-          }}
-        />
-
-        <View className={`${row} items-center gap-2 px-5`}>
-          <View className={`${row} flex-1 items-center gap-2`}>
-            <Image source={appIcon} style={{ width: 34, height: 34 }} contentFit="contain" />
-            <View>
-              <Text className={`text-[17px] ${font.extrabold} text-brand-700 ${align}`}>PMMS</Text>
-              <Text className={`text-[8px] leading-[10px] ${font.medium} text-ink-500 ${align}`}>
-                {copy.brandSubtitle}
+  const renderers: Record<HomeSection, () => ReactNode> = {
+    greeting: () => (
+      <View className="mt-6 px-5" style={{ minHeight: heroHeight - 16 }}>
+        <View
+          style={{ maxWidth: width * 0.68, alignSelf: isAr ? 'flex-end' : 'flex-start' }}
+          className={`${row} items-center gap-3`}
+        >
+          <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-brand-600">
+            {avatarUri ? (
+              <Image
+                source={{ uri: avatarUri }}
+                style={{ width: 56, height: 56 }}
+                contentFit="cover"
+              />
+            ) : (
+              <Text className={`text-[18px] ${font.extrabold} text-white`}>{initials}</Text>
+            )}
+          </View>
+          <View className="shrink">
+            <Text className={`text-[24px] ${font.extrabold} text-ink-900 ${align}`}>
+              {copy.hello(firstName)} 👋
+            </Text>
+            <View className={`${row} mt-0.5 items-center gap-1`}>
+              <Ionicons name="location-outline" size={13} color="#64748B" />
+              <Text
+                numberOfLines={1}
+                className={`shrink text-[12.5px] ${font.medium} text-ink-500 ${align}`}
+              >
+                {locationLabel}
               </Text>
             </View>
           </View>
-          <Pressable
-            className={`${row} max-w-[56%] items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2`}
-          >
-            <Ionicons name="location-outline" size={15} color="#334155" />
-            <Text numberOfLines={1} className={`shrink text-[12px] ${font.medium} text-ink-700`}>
-              {locationLabel}
-            </Text>
-            <Ionicons name="chevron-down" size={14} color="#64748B" />
-          </Pressable>
-          <Pressable
-            onPress={onOpenNotifications}
-            className="h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white"
-          >
-            <Ionicons name="notifications-outline" size={19} color="#0B1930" />
-            {hasUnread ? (
-              <View className="absolute right-2.5 top-2 h-2 w-2 rounded-full border border-white bg-rose-500" />
-            ) : null}
-          </Pressable>
         </View>
-
-        <View
-          className="mt-7 px-5"
-          style={{ maxWidth: width * 0.72, alignSelf: isAr ? 'flex-end' : 'flex-start' }}
+        <Text
+          className={`mt-4 text-[14px] leading-5 ${font.regular} text-ink-500 ${align}`}
+          style={{ maxWidth: width * 0.56, alignSelf: isAr ? 'flex-end' : 'flex-start' }}
         >
-          <Text className={`text-[27px] ${font.extrabold} text-ink-900 ${align}`}>
-            {copy.hello(firstName)} 👋
-          </Text>
-          <Text
-            className={`mt-2 text-[14px] leading-5 ${font.regular} text-ink-500 ${align}`}
-            style={{ maxWidth: width * 0.56, alignSelf: isAr ? 'flex-end' : 'flex-start' }}
-          >
-            {copy.greetingSubtitle}
-          </Text>
-        </View>
-
-        <View className="mt-12 px-5">
-          <LinearGradient
-            colors={['#DCEAFE', '#EEF5FF']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{ borderRadius: 24, overflow: 'hidden' }}
-          >
-            <View className={`${row} items-center p-5`}>
-              <View className="flex-1">
-                <Text className={`text-[17px] ${font.bold} text-ink-900 ${align}`}>
-                  {copy.supportTitle}
+          {copy.greetingSubtitle}
+        </Text>
+      </View>
+    ),
+    banners: () => (
+      <View className="mt-5">
+        <PromoCarousel onAction={bannerAction} />
+      </View>
+    ),
+    categories: () => (
+      <View className="mt-5">
+        <CategoryGrid onCreate={() => onCreateRequest()} onCategory={onCreateRequest} />
+      </View>
+    ),
+    support: () => (
+      <View className="mt-5 px-5">
+        <LinearGradient
+          colors={['#DCEAFE', '#EEF5FF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ borderRadius: 24, overflow: 'hidden' }}
+        >
+          <View className={`${row} items-center p-5`}>
+            <View className="flex-1">
+              <Text className={`text-[17px] ${font.bold} text-ink-900 ${align}`}>
+                {copy.supportTitle}
+              </Text>
+              <Text
+                className={`mt-1.5 text-[13px] leading-[19px] ${font.regular} text-ink-500 ${align}`}
+              >
+                {copy.supportBody}
+              </Text>
+              <Pressable
+                onPress={() => onCreateRequest()}
+                className={`mt-4 ${row} items-center gap-2 self-start rounded-full bg-brand-600 px-4 py-2.5 active:opacity-90`}
+                style={{ alignSelf: isAr ? 'flex-end' : 'flex-start' }}
+              >
+                <Text className={`text-[13px] ${font.semibold} text-white`}>
+                  {copy.reportIssue}
                 </Text>
-                <Text
-                  className={`mt-1.5 text-[13px] leading-[19px] ${font.regular} text-ink-500 ${align}`}
-                >
-                  {copy.supportBody}
-                </Text>
-                <Pressable
-                  onPress={onCreateRequest}
-                  className={`mt-4 ${row} items-center gap-2 self-start rounded-full bg-brand-600 px-4 py-2.5 active:opacity-90`}
-                  style={{ alignSelf: isAr ? 'flex-end' : 'flex-start' }}
-                >
-                  <Text className={`text-[13px] ${font.semibold} text-white`}>
-                    {copy.reportIssue}
-                  </Text>
-                  <Ionicons name={isAr ? 'arrow-back' : 'arrow-forward'} size={15} color="#fff" />
-                </Pressable>
-              </View>
-              <SupportIllustration size={Math.min(width * 0.3, 124)} />
+                <Ionicons name={isAr ? 'arrow-back' : 'arrow-forward'} size={15} color="#fff" />
+              </Pressable>
             </View>
-          </LinearGradient>
-        </View>
-
-        <View className={`mt-4 ${row} gap-3 px-5`}>
-          <StatCard
-            icon="document-text-outline"
-            color="#2F80F0"
-            bg="bg-brand-50"
-            value={stats.open}
-            label={copy.openRequests}
-          />
-          <StatCard
-            icon="time-outline"
-            color="#F59E0B"
-            bg="bg-amber-50"
-            value={stats.progress}
-            label={copy.inProgress}
-          />
-          <StatCard
-            icon="checkmark-circle-outline"
-            color="#10B981"
-            bg="bg-emerald-50"
-            value={stats.done}
-            label={copy.completed}
-          />
-        </View>
-
+            <SupportIllustration size={Math.min(width * 0.3, 124)} />
+          </View>
+        </LinearGradient>
+      </View>
+    ),
+    stats: () => (
+      <View className={`mt-4 ${row} gap-3 px-5`}>
+        <StatCard
+          icon="document-text-outline"
+          color="#2F80F0"
+          bg="bg-brand-50"
+          value={stats.open}
+          label={copy.openRequests}
+        />
+        <StatCard
+          icon="time-outline"
+          color="#F59E0B"
+          bg="bg-amber-50"
+          value={stats.progress}
+          label={copy.inProgress}
+        />
+        <StatCard
+          icon="checkmark-circle-outline"
+          color="#10B981"
+          bg="bg-emerald-50"
+          value={stats.done}
+          label={copy.completed}
+        />
+      </View>
+    ),
+    quickActions: () => (
+      <>
         <SectionHeader title={copy.quickActions} action={copy.seeAll} onAction={onComingSoon} />
         <View className={`${row} gap-3 px-5`}>
           <QuickAction
@@ -232,7 +236,7 @@ export default function HomeScreen({
             color="#2F80F0"
             bg="bg-brand-50"
             label={copy.newComplaint}
-            onPress={onCreateRequest}
+            onPress={() => onCreateRequest()}
           />
           <QuickAction
             icon="locate-outline"
@@ -256,7 +260,10 @@ export default function HomeScreen({
             onPress={onComingSoon}
           />
         </View>
-
+      </>
+    ),
+    requests: () => (
+      <>
         <SectionHeader title={copy.myRequests} action={copy.seeAll} onAction={onOpenRequests} />
         <View className="mx-5 overflow-hidden rounded-2xl bg-white" style={cardShadow}>
           {complaints.isError ? (
@@ -284,7 +291,10 @@ export default function HomeScreen({
             ))
           )}
         </View>
-
+      </>
+    ),
+    visit: () => (
+      <>
         <SectionHeader title={copy.upcomingVisit} />
         <View className="mx-5 rounded-2xl bg-white p-4" style={cardShadow}>
           {visit ? (
@@ -335,6 +345,80 @@ export default function HomeScreen({
             </View>
           )}
         </View>
+      </>
+    ),
+  };
+
+  return (
+    <View className="flex-1 bg-[#F6F9FE]">
+      <LinearGradient
+        colors={['#E4EFFE', '#F6F9FE']}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 360 }}
+      />
+      <ScrollView
+        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: bottomInset + 24 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#2F80F0" />
+        }
+      >
+        {sections.includes('greeting') ? (
+          <Image
+            source={heroImage}
+            contentFit="contain"
+            style={{
+              position: 'absolute',
+              top: insets.top + 50,
+              width: heroWidth,
+              height: heroHeight,
+              ...heroSide,
+            }}
+          />
+        ) : null}
+
+        <View className={`${row} items-center gap-2 px-5`}>
+          <View className={`${row} flex-1 items-center gap-2`}>
+            <Image source={appIcon} style={{ width: 34, height: 34 }} contentFit="contain" />
+            <View>
+              <Text className={`text-[17px] ${font.extrabold} text-brand-700 ${align}`}>PMMS</Text>
+              <Text className={`text-[8px] leading-[10px] ${font.medium} text-ink-500 ${align}`}>
+                {copy.brandSubtitle}
+              </Text>
+            </View>
+          </View>
+          <View className="flex-row items-center rounded-full border border-slate-200 bg-white p-1">
+            {(['en', 'ar'] as const).map((code) => (
+              <Pressable
+                key={code}
+                onPress={() => setLanguage(code)}
+                className={`rounded-full px-2.5 py-1 ${language === code ? 'bg-brand-600' : ''}`}
+              >
+                <Text
+                  className={`text-[12px] ${code === 'ar' ? 'font-cairo-bold' : 'font-inter-semibold'} ${language === code ? 'text-white' : 'text-ink-500'}`}
+                >
+                  {code === 'en' ? 'EN' : 'عربي'}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+          <Pressable
+            onPress={onOpenNotifications}
+            className="h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white"
+          >
+            <Ionicons name="notifications-outline" size={19} color="#0B1930" />
+            {unreadCount > 0 ? (
+              <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-[#EAF2FE] bg-rose-500 px-1">
+                <Text className="font-inter-bold text-[9px] text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            ) : null}
+          </Pressable>
+        </View>
+
+        {sections.map((section) => (
+          <Fragment key={section}>{renderers[section]()}</Fragment>
+        ))}
       </ScrollView>
     </View>
   );

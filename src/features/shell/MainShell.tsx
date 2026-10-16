@@ -9,6 +9,7 @@ import { useNotifications } from '../home/useTenantHome';
 import NotificationsScreen from '../notifications/NotificationsScreen';
 import ProfileScreen from '../profile/ProfileScreen';
 import NewRequestFlow from '../create/NewRequestFlow';
+import { Category } from '../create/useCreateData';
 import RequestDetailScreen from '../requests/RequestDetailScreen';
 import RequestsScreen from '../requests/RequestsScreen';
 import BottomTabBar, { TAB_BAR_HEIGHT, TabKey } from './BottomTabBar';
@@ -16,7 +17,7 @@ import BottomTabBar, { TAB_BAR_HEIGHT, TabKey } from './BottomTabBar';
 export default function MainShell() {
   const [tab, setTab] = useState<TabKey>('home');
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState<{ category?: Category } | null>(null);
   const insets = useSafeAreaInsets();
   const { language } = useLanguage();
   const copy = homeCopy[language];
@@ -46,14 +47,15 @@ export default function MainShell() {
   if (creating) {
     return (
       <NewRequestFlow
-        onClose={() => setCreating(false)}
+        initialCategory={creating.category}
+        onClose={() => setCreating(null)}
         onHome={() => {
-          setCreating(false);
+          setCreating(null);
           setDetailId(null);
           setTab('home');
         }}
         onViewComplaints={() => {
-          setCreating(false);
+          setCreating(null);
           setDetailId(null);
           setTab('requests');
         }}
@@ -71,7 +73,7 @@ export default function MainShell() {
             onOpenRequest={setDetailId}
             onOpenNotifications={() => setTab('notifications')}
             onComingSoon={comingSoon}
-            onCreateRequest={() => setCreating(true)}
+            onCreateRequest={(category) => setCreating({ category })}
             onEmergency={emergency}
           />
         ) : null}
@@ -97,7 +99,7 @@ export default function MainShell() {
       <BottomTabBar
         active={tab}
         onChange={changeTab}
-        onCreate={() => setCreating(true)}
+        onCreate={() => setCreating({})}
         hasUnread={hasUnread}
       />
     </View>

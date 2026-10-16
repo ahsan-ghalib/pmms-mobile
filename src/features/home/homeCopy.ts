@@ -33,6 +33,26 @@ export const homeCopy = {
     comingSoonTitle: 'Coming soon',
     comingSoonBody: 'This screen is being designed next.',
     emergencyBody: 'For emergencies, please call your building management directly.',
+    helpTitle: 'How may we help you?',
+    helpBody: 'Select a category to raise a request',
+    moreCategories: 'More',
+    banners: [
+      {
+        eyebrow: 'Seasonal care',
+        title: 'Book your AC check-up\nbefore the heat',
+        cta: 'Book now',
+      },
+      {
+        eyebrow: '24/7 support',
+        title: 'Water leak or power cut?\nWe respond fast',
+        cta: 'Get help',
+      },
+      {
+        eyebrow: 'Stay updated',
+        title: 'Track every visit\nin real time',
+        cta: 'My requests',
+      },
+    ],
     tabs: {
       home: 'Home',
       requests: 'Requests',
@@ -84,6 +104,26 @@ export const homeCopy = {
     comingSoonTitle: 'قريباً',
     comingSoonBody: 'يتم تصميم هذه الشاشة حالياً.',
     emergencyBody: 'في حالات الطوارئ، يرجى الاتصال بإدارة المبنى مباشرة.',
+    helpTitle: 'كيف يمكننا مساعدتك؟',
+    helpBody: 'اختر فئة لتقديم طلب',
+    moreCategories: 'المزيد',
+    banners: [
+      {
+        eyebrow: 'عناية موسمية',
+        title: 'احجز فحص التكييف\nقبل الحر',
+        cta: 'احجز الآن',
+      },
+      {
+        eyebrow: 'دعم على مدار الساعة',
+        title: 'تسرب مياه أو انقطاع كهرباء؟\nنستجيب بسرعة',
+        cta: 'اطلب المساعدة',
+      },
+      {
+        eyebrow: 'ابقَ على اطلاع',
+        title: 'تابع كل زيارة\nلحظة بلحظة',
+        cta: 'طلباتي',
+      },
+    ],
     tabs: { home: 'الرئيسية', requests: 'الطلبات', notifications: 'الإشعارات', profile: 'حسابي' },
     status: {
       submitted: 'مُرسل',

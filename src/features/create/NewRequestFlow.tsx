@@ -28,12 +28,18 @@ import SuccessStep from './SuccessStep';
 import { Category, Service, Slot, useCategories, useSlots } from './useCreateData';
 
 type Props = {
+  initialCategory?: Category;
   onClose: () => void;
   onHome: () => void;
   onViewComplaints: () => void;
 };
 
-export default function NewRequestFlow({ onClose, onHome, onViewComplaints }: Props) {
+export default function NewRequestFlow({
+  initialCategory,
+  onClose,
+  onHome,
+  onViewComplaints,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { language, isAr, font, row } = useLanguage();
   const { token } = useAuth();
@@ -43,9 +49,11 @@ export default function NewRequestFlow({ onClose, onHome, onViewComplaints }: Pr
   const categories = useCategories();
   const context = useComplaintContext();
 
-  const [step, setStep] = useState<StepKey>('category');
-  const [category, setCategory] = useState<Category | null>(null);
-  const [priority, setPriority] = useState<'normal' | 'urgent'>('normal');
+  const [step, setStep] = useState<StepKey>(initialCategory ? 'service' : 'category');
+  const [category, setCategory] = useState<Category | null>(initialCategory ?? null);
+  const [priority, setPriority] = useState<'normal' | 'urgent'>(
+    !initialCategory || initialCategory.normal_priority_enabled ? 'normal' : 'urgent',
+  );
   const [service, setService] = useState<Service | null>(null);
   const [date, setDate] = useState<string | null>(null);
   const [slot, setSlot] = useState<Slot | null>(null);

@@ -56,8 +56,8 @@ export function categoryTile(categoryName?: string | null): {
   if (name.includes('plumb')) return { icon: 'faucet', color: '#2F80F0', bg: '#E8F1FE' };
   if (name.includes('electric'))
     return { icon: 'lightbulb-outline', color: '#16A34A', bg: '#E6F6EC' };
-  if (name.includes('civil') || name.includes('carpent'))
-    return { icon: 'door', color: '#F08A24', bg: '#FEF0E2' };
+  if (name.includes('carpent')) return { icon: 'saw-blade', color: '#A16207', bg: '#FBF1DC' };
+  if (name.includes('civil')) return { icon: 'wall', color: '#F08A24', bg: '#FEF0E2' };
   if (name.includes('paint')) return { icon: 'format-paint', color: '#DB2777', bg: '#FDE8F2' };
   if (name.includes('appliance'))
     return { icon: 'washing-machine', color: '#0EA5E9', bg: '#E0F4FD' };

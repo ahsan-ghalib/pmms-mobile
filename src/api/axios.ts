@@ -6,7 +6,7 @@ import i18n from '../i18n';
 /** Fired after a 401 clears the stored session so AuthContext can update. */
 export const AUTH_SESSION_INVALID_EVENT = 'auth:session-invalid';
 
-const DEFAULT_API_URL = __DEV__ ? 'http://127.0.0.1:8000/api' : 'https://api.soouqlive.com/api';
+const DEFAULT_API_URL = __DEV__ ? 'http://127.0.0.1:8000/api' : 'https://api.pmms.com/api';
 
 const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL,

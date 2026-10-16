@@ -18,11 +18,23 @@ type Props = {
   onDescription: (value: string) => void;
 };
 
+const UPLOAD_TYPES: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+};
+
 function toPicked(asset: ImagePicker.ImagePickerAsset, index: number): PickedPhoto {
-  const type = asset.mimeType || 'image/jpeg';
-  const ext = type.split('/')[1] || 'jpg';
-  return { uri: asset.uri, name: asset.fileName || `photo-${Date.now()}-${index}.${ext}`, type };
+  const type = asset.mimeType && UPLOAD_TYPES[asset.mimeType] ? asset.mimeType : 'image/jpeg';
+  return { uri: asset.uri, name: `photo-${Date.now()}-${index}.${UPLOAD_TYPES[type]}`, type };
 }
+
+const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
+  mediaTypes: ['images'],
+  quality: 0.6,
+  preferredAssetRepresentationMode:
+    ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+};
 
 export default function PhotosStep({ photos, onPhotos, description, onDescription }: Props) {
   const { language, font, row, align } = useLanguage();
@@ -36,8 +48,7 @@ export default function PhotosStep({ photos, onPhotos, description, onDescriptio
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return Toast.show({ type: 'error', text1: copy.permissionDenied });
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      quality: 0.6,
+      ...PICKER_OPTIONS,
       allowsMultipleSelection: remaining > 1,
       selectionLimit: remaining,
     });
@@ -47,7 +58,7 @@ export default function PhotosStep({ photos, onPhotos, description, onDescriptio
   const fromCamera = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) return Toast.show({ type: 'error', text1: copy.permissionDenied });
-    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.6 });
+    const result = await ImagePicker.launchCameraAsync(PICKER_OPTIONS);
     if (!result.canceled) add(result.assets);
   };
 
