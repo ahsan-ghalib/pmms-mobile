@@ -1,0 +1,63 @@
+export const ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login/customer',
+    LOGOUT: '/auth/logout',
+    DELETE_ACCOUNT: '/account/delete',
+    REGISTER: '/auth/register',
+    REQUEST_OTP: '/auth/request-otp',
+    VERIFY_OTP: '/auth/verify-otp',
+    ADD_ADDRESS: '/auth/add-address',
+    PROFILE: '/user',
+    UPDATE_PROFILE: '/user/profile',
+    UPDATE_LANGUAGE: '/user/language',
+    CHANGE_PASSWORD: '/user/password',
+    ACTIVITY_INFO: '/vendor/activity-information',
+    BUSINESS_INFO: '/vendor/business-information',
+    LOCATION_INFO: '/vendor/location-information',
+  },
+  PRODUCTS: {
+    LIST: '/product-management/products/search',
+    DETAIL: (id: string) => `/product-management/products/${id}`,
+    TOP_SELLING: '/product-management/products/top-selling',
+  },
+  DISCOVER: {
+    COUNTRIES: '/dropdown/countries',
+    STATES: '/dropdown/states',
+    CITIES: '/dropdown/cities',
+    ACCOUNT_TYPES: '/dropdown/account-types',
+    ACTIVITY_TYPES: '/dropdown/activity-types',
+    CATEGORIES: '/dropdown/categories',
+    VENDOR_FILTERS: '/dropdown/vendor-filters',
+    VENDOR_FEEDS: '/vendors/feeds',
+    BANKS: '/settings/banks',
+  },
+  VENDORS: {
+    DETAILS: (id: string | number) => `/vendors/${id}/details`,
+    BANNERS: (id: string | number) => `/vendors/${id}/banners`,
+  },
+  POSTS: {
+    LIST: '/posts',
+    COMMENTS: (id: string) => `/posts/${id}/comments`,
+  },
+  YOUTUBE: {
+    ACTIVE_LIVES: '/youtube/active-lives',
+    WATCH_OPEN: '/youtube/live/watch/open',
+    WATCH_HEARTBEAT: '/youtube/live/watch/heartbeat',
+    WATCH_LEAVE: '/youtube/live/watch/leave',
+  },
+  ORDERS: {
+    LIST: '/orders',
+    DETAIL: (id: string) => `/orders/${id}`,
+  },
+  WALLET: {
+    MY_WALLET: '/my-wallet',
+    RECHARGE_PREPARE: '/wallet/recharge/prepare',
+    RECHARGE_CONFIRM: '/wallet/recharge/confirm',
+  },
+  NOTIFICATIONS: {
+    LIST: '/notifications',
+    UNREAD_COUNT: '/notifications/unread-count',
+    READ: (id: string | number) => `/notifications/${id}/read`,
+    READ_ALL: '/notifications/read-all',
+  },
+};

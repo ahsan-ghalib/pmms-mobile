@@ -1,0 +1,17 @@
+{
+  "tenant": {
+    "name": "Ahmed Hassan",
+    "greeting": "Hello, Mr. Ahmed",
+    "unit": "Villa 12, Al Wakra Compound"
+  },
+  "categories": [
+    { "id": "ac", "name": "AC" },
+    { "id": "plumbing", "name": "Plumbing" },
+    { "id": "electrical", "name": "Electrical" },
+    { "id": "appliances", "name": "Appliances" },
+    { "id": "painting", "name": "Painting" },
+    { "id": "civil", "name": "Civil" },
+    { "id": "carpentry", "name": "Carpentry" },
+    { "id": "others", "name": "Others" }
+  ]
+}

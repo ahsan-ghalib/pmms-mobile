@@ -1,0 +1,37 @@
+import React from 'react';
+import { Text as RNText, TextProps, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
+export const Text = (props: TextProps) => {
+  const { i18n } = useTranslation();
+  const isRTL = i18n.language === 'ar';
+  
+  let fontFamily = isRTL ? 'Cairo_400Regular' : 'Inter_400Regular';
+  
+  const flattenedStyle = StyleSheet.flatten(props.style) || {};
+  let fontWeight = String(flattenedStyle.fontWeight || '400');
+  
+  // If a specific fontFamily is already forced, respect it
+  if (flattenedStyle.fontFamily && !flattenedStyle.fontFamily.includes('Inter') && !flattenedStyle.fontFamily.includes('Cairo')) {
+     return <RNText {...props} />;
+  }
+  
+  if (isRTL) {
+    if (fontWeight === '500') fontFamily = 'Cairo_500Medium';
+    else if (fontWeight === '600') fontFamily = 'Cairo_600SemiBold';
+    else if (fontWeight === '700' || fontWeight === 'bold') fontFamily = 'Cairo_700Bold';
+    else if (fontWeight === '800') fontFamily = 'Cairo_800ExtraBold';
+    else if (fontWeight === '900') fontFamily = 'Cairo_900Black';
+  } else {
+    if (fontWeight === '500') fontFamily = 'Inter_500Medium';
+    else if (fontWeight === '600') fontFamily = 'Inter_600SemiBold';
+    else if (fontWeight === '700' || fontWeight === 'bold') fontFamily = 'Inter_700Bold';
+    else if (fontWeight === '800') fontFamily = 'Inter_800ExtraBold';
+    else if (fontWeight === '900') fontFamily = 'Inter_900Black';
+  }
+  // Destructure fontWeight out of the final style to prevent React Native
+  // from artificially trying to bold a custom bold font.
+  const { fontWeight: _fw, ...restStyle } = flattenedStyle;
+
+  return <RNText {...props} style={[restStyle, { fontFamily }]} />;
+};
