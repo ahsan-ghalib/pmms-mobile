@@ -32,8 +32,6 @@ import {
 import { useComplaintContext, useComplaints, useNotifications } from './useTenantHome';
 
 const appIcon = require('../../../assets/images/auth/app-icon.webp');
-const heroImage = require('../../../assets/images/auth/login-hero.webp');
-
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const cardShadow = {
@@ -112,18 +110,12 @@ export default function HomeScreen({
     notifications.refetch();
   };
 
-  const heroWidth = Math.min(width * 0.38, 170);
-  const heroHeight = heroWidth * 1.27;
-  const heroSide = isAr ? { left: -width * 0.04 } : { right: -width * 0.04 };
   const chevron: IconName = isAr ? 'chevron-back' : 'chevron-forward';
 
   const renderers: Record<HomeSection, () => ReactNode> = {
     greeting: () => (
-      <View className="mt-6 px-5" style={{ minHeight: heroHeight - 16 }}>
-        <View
-          style={{ maxWidth: width * 0.68, alignSelf: isAr ? 'flex-end' : 'flex-start' }}
-          className={`${row} items-center gap-3`}
-        >
+      <View className="mt-5 px-5">
+        <View className={`${row} items-center gap-3`}>
           <View className="h-14 w-14 items-center justify-center overflow-hidden rounded-full border-2 border-white bg-brand-600">
             {avatarUri ? (
               <Image
@@ -150,10 +142,7 @@ export default function HomeScreen({
             </View>
           </View>
         </View>
-        <Text
-          className={`mt-4 text-[14px] leading-5 ${font.regular} text-ink-500 ${align}`}
-          style={{ maxWidth: width * 0.56, alignSelf: isAr ? 'flex-end' : 'flex-start' }}
-        >
+        <Text className={`mt-3 text-[14px] leading-5 ${font.regular} text-ink-500 ${align}`}>
           {copy.greetingSubtitle}
         </Text>
       </View>
@@ -362,20 +351,6 @@ export default function HomeScreen({
           <RefreshControl refreshing={refreshing} onRefresh={refresh} tintColor="#2F80F0" />
         }
       >
-        {sections.includes('greeting') ? (
-          <Image
-            source={heroImage}
-            contentFit="contain"
-            style={{
-              position: 'absolute',
-              top: insets.top + 50,
-              width: heroWidth,
-              height: heroHeight,
-              ...heroSide,
-            }}
-          />
-        ) : null}
-
         <View className={`${row} items-center gap-2 px-5`}>
           <View className={`${row} flex-1 items-center gap-2`}>
             <Image source={appIcon} style={{ width: 34, height: 34 }} contentFit="contain" />

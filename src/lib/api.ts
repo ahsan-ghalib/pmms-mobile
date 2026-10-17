@@ -1,4 +1,9 @@
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://pmms-backend.test/api/v1';
+const envApiUrl = process.env.EXPO_PUBLIC_API_URL;
+if (!envApiUrl) {
+  throw new Error('EXPO_PUBLIC_API_URL is not set. Copy .env.example to .env and restart Metro.');
+}
+
+export const API_URL = envApiUrl.replace(/\/+$/, '');
 
 export class ApiError extends Error {
   status: number;

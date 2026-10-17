@@ -2,14 +2,13 @@ import axios from 'axios';
 import { Alert, DeviceEventEmitter } from 'react-native';
 import storage from '../storage/storage';
 import i18n from '../i18n';
+import { API_URL } from '../lib/api';
 
 /** Fired after a 401 clears the stored session so AuthContext can update. */
 export const AUTH_SESSION_INVALID_EVENT = 'auth:session-invalid';
 
-const DEFAULT_API_URL = __DEV__ ? 'http://127.0.0.1:8000/api' : 'https://api.pmms.com/api';
-
 const axiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL,
+  baseURL: API_URL,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
