@@ -32,8 +32,9 @@ export function useAuthedQuery<T>(key: string, path: string, enabled = true) {
   });
 }
 
-export const useComplaints = () => useAuthedQuery<Complaint[]>('complaints', '/complaints');
-export const useComplaintContext = () =>
-  useAuthedQuery<ComplaintContext>('complaint-context', '/complaints/context');
+export const useComplaints = (enabled = true) =>
+  useAuthedQuery<Complaint[]>('complaints', '/complaints', enabled);
+export const useComplaintContext = (enabled = true) =>
+  useAuthedQuery<ComplaintContext>('complaint-context', '/complaints/context', enabled);
 export const useNotifications = () =>
   useAuthedQuery<InboxNotification[]>('notifications', '/notifications');

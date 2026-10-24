@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   BackHandler,
@@ -22,13 +22,16 @@ import { createCopy } from './createCopy';
 import PhotosStep, { PickedPhoto } from './PhotosStep';
 import ReviewStep, { StepKey } from './ReviewStep';
 import ScheduleStep from './ScheduleStep';
-import ServiceStep from './ServiceStep';
-import { FooterButton, localName, PriorityBadge, SummaryRow } from './shared';
+import ServiceStep, { PriorityCard } from './ServiceStep';
+import { FooterButton, localName, SectionTitle } from './shared';
 import SuccessStep from './SuccessStep';
 import { Category, Service, Slot, useCategories, useSlots } from './useCreateData';
 
+export type RequestSite = { property_id: string; unit_id?: string | null; label: string };
+
 type Props = {
   initialCategory?: Category;
+  site?: RequestSite;
   onClose: () => void;
   onHome: () => void;
   onViewComplaints: () => void;
@@ -36,6 +39,7 @@ type Props = {
 
 export default function NewRequestFlow({
   initialCategory,
+  site,
   onClose,
   onHome,
   onViewComplaints,
@@ -47,9 +51,10 @@ export default function NewRequestFlow({
   const copy = createCopy[language];
 
   const categories = useCategories();
-  const context = useComplaintContext();
+  const context = useComplaintContext(!site);
 
-  const [step, setStep] = useState<StepKey>(initialCategory ? 'service' : 'category');
+  const [step, setStep] = useState<StepKey>(initialCategory ? 'details' : 'category');
+  const scrollRef = useRef<ScrollView>(null);
   const [category, setCategory] = useState<Category | null>(initialCategory ?? null);
   const [priority, setPriority] = useState<'normal' | 'urgent'>(
     !initialCategory || initialCategory.normal_priority_enabled ? 'normal' : 'urgent',
@@ -67,11 +72,12 @@ export default function NewRequestFlow({
   const firstOpenDate = slotList.find((item) => item.available)?.date ?? slotList[0]?.date ?? null;
   const activeDate = date ?? firstOpenDate;
 
-  const order: StepKey[] =
-    priority === 'normal'
-      ? ['category', 'service', 'schedule', 'photos', 'review']
-      : ['category', 'service', 'photos', 'review'];
+  const order: StepKey[] = ['category', 'details', 'review'];
   const index = Math.max(order.indexOf(step), 0);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [step]);
 
   const back = () => {
     if (index === 0) onClose();
@@ -95,24 +101,24 @@ export default function NewRequestFlow({
       setPriority(next.normal_priority_enabled ? 'normal' : 'urgent');
     }
     setCategory(next);
-    setStep('service');
+    setStep('details');
   };
 
   const defaults = context.data?.default;
-  const locationLabel = [defaults?.property?.name, defaults?.unit?.name]
-    .filter(Boolean)
-    .join(' • ');
+  const locationLabel = site
+    ? site.label
+    : [defaults?.property?.name, defaults?.unit?.name].filter(Boolean).join(' • ');
 
   const submit = async (confirmDuplicate = false) => {
     if (!category || !service) return;
-    const propertyId = defaults?.property_id ?? defaults?.property?.id;
+    const propertyId = site ? site.property_id : (defaults?.property_id ?? defaults?.property?.id);
     if (!propertyId) {
       Toast.show({ type: 'error', text1: copy.submitFailed, text2: copy.noProperty });
       return;
     }
     const form = new FormData();
     form.append('property_id', propertyId);
-    const unitId = defaults?.unit_id ?? defaults?.unit?.id;
+    const unitId = site ? site.unit_id : (defaults?.unit_id ?? defaults?.unit?.id);
     if (unitId) form.append('unit_id', unitId);
     form.append('category_id', category.id);
     form.append('service_id', service.id);
@@ -157,25 +163,23 @@ export default function NewRequestFlow({
 
   const titles: Record<StepKey, string> = {
     category: copy.newRequest,
-    service: localName(category, language) || copy.newRequest,
-    schedule: localName(service, language) || copy.newRequest,
-    photos: copy.addPhotos,
+    details: localName(category, language) || copy.newRequest,
     review: copy.review,
     success: '',
   };
 
-  const canContinue =
-    step === 'service'
-      ? Boolean(service)
-      : step === 'schedule'
-        ? Boolean(slot)
-        : step === 'photos'
-          ? description.trim().length >= 5
-          : step === 'review';
+  const missing = !service
+    ? copy.missingService
+    : priority === 'normal' && !slot
+      ? copy.missingSlot
+      : description.trim().length < 5
+        ? copy.missingDescription
+        : null;
 
   const next = () => {
-    if (step === 'review') submit();
-    else setStep(order[index + 1]);
+    if (step === 'review') return submit();
+    if (missing) return Toast.show({ type: 'error', text1: missing });
+    setStep('review');
   };
 
   return (
@@ -215,6 +219,7 @@ export default function NewRequestFlow({
       </View>
 
       <ScrollView
+        ref={scrollRef}
         className="flex-1"
         contentContainerStyle={{ padding: 20, paddingBottom: 24, gap: 16 }}
         keyboardShouldPersistTaps="handled"
@@ -229,44 +234,35 @@ export default function NewRequestFlow({
           />
         ) : null}
 
-        {step === 'service' && category ? (
-          <ServiceStep
-            category={category}
-            priority={priority}
-            onPriority={setPriority}
-            serviceId={service?.id}
-            onService={setService}
-          />
-        ) : null}
-
-        {step === 'schedule' && category ? (
+        {step === 'details' && category ? (
           <>
-            <SummaryRow
-              category={category}
-              title={localName(service, language)}
-              badge={<PriorityBadge priority="normal" label={copy.normal} />}
-            />
-            <ScheduleStep
-              slots={slotList}
-              loading={slots.isLoading}
-              date={activeDate}
-              onDate={(value) => {
-                setDate(value);
-                setSlot(null);
-              }}
-              slot={slot}
-              onSlot={setSlot}
+            <ServiceStep category={category} serviceId={service?.id} onService={setService} />
+            <SectionTitle number={2} title={copy.priority} />
+            <PriorityCard category={category} priority={priority} onPriority={setPriority} />
+            {priority === 'normal' ? (
+              <>
+                <SectionTitle number={3} title={copy.timeTitle} />
+                <ScheduleStep
+                  slots={slotList}
+                  loading={slots.isLoading}
+                  date={activeDate}
+                  onDate={(value) => {
+                    setDate(value);
+                    setSlot(null);
+                  }}
+                  slot={slot}
+                  onSlot={setSlot}
+                />
+              </>
+            ) : null}
+            <SectionTitle number={priority === 'normal' ? 4 : 3} title={copy.photosTitle} />
+            <PhotosStep
+              photos={photos}
+              onPhotos={setPhotos}
+              description={description}
+              onDescription={setDescription}
             />
           </>
-        ) : null}
-
-        {step === 'photos' ? (
-          <PhotosStep
-            photos={photos}
-            onPhotos={setPhotos}
-            description={description}
-            onDescription={setDescription}
-          />
         ) : null}
 
         {step === 'review' && category && service ? (
@@ -287,7 +283,6 @@ export default function NewRequestFlow({
         <FooterButton
           label={step === 'review' ? copy.submit : copy.next}
           onPress={next}
-          disabled={!canContinue}
           loading={submitting}
         />
       ) : null}

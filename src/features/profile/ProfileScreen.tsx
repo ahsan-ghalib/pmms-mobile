@@ -1,4 +1,4 @@
-import { ComponentProps, ReactNode, useState } from 'react';
+import { ComponentProps, Fragment, ReactNode, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,28 +23,46 @@ const cardShadow = {
   elevation: 1,
 };
 
+export type ProfileStat = { value: number; label: string; color: string };
+
 type Props = {
   bottomInset: number;
   onOpenNotifications: () => void;
+  stats?: ProfileStat[];
+  onRefreshStats?: () => void;
 };
 
-export default function ProfileScreen({ bottomInset, onOpenNotifications }: Props) {
+export default function ProfileScreen({
+  bottomInset,
+  onOpenNotifications,
+  stats: customStats,
+  onRefreshStats,
+}: Props) {
   const insets = useSafeAreaInsets();
   const { language, setLanguage, isAr, font, row, align } = useLanguage();
   const { user, signOut } = useAuth();
   const copy = profileCopy[language];
-  const complaints = useComplaints();
-  const context = useComplaintContext();
+  const tenantMode = !customStats;
+  const complaints = useComplaints(tenantMode);
+  const context = useComplaintContext(tenantMode);
   const [signingOut, setSigningOut] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
 
   const list = complaints.data ?? [];
-  const stats = {
-    total: list.length,
-    open: list.filter((item) => [...OPEN_STATUSES, ...PROGRESS_STATUSES].includes(item.status))
-      .length,
-    done: list.filter((item) => DONE_STATUSES.includes(item.status)).length,
-  };
+  const stats: ProfileStat[] = customStats ?? [
+    { value: list.length, label: copy.totalRequests, color: 'text-brand-600' },
+    {
+      value: list.filter((item) => [...OPEN_STATUSES, ...PROGRESS_STATUSES].includes(item.status))
+        .length,
+      label: copy.openRequests,
+      color: 'text-amber-600',
+    },
+    {
+      value: list.filter((item) => DONE_STATUSES.includes(item.status)).length,
+      label: copy.completedRequests,
+      color: 'text-emerald-600',
+    },
+  ];
   const property = context.data?.default?.property?.name;
   const unit = context.data?.default?.unit?.name;
   const residence = [unit, property].filter(Boolean).join(', ');
@@ -73,8 +91,11 @@ export default function ProfileScreen({ bottomInset, onOpenNotifications }: Prop
           <RefreshControl
             refreshing={complaints.isRefetching || context.isRefetching}
             onRefresh={() => {
-              complaints.refetch();
-              context.refetch();
+              if (onRefreshStats) onRefreshStats();
+              else {
+                complaints.refetch();
+                context.refetch();
+              }
             }}
             tintColor="#2F80F0"
           />
@@ -143,11 +164,12 @@ export default function ProfileScreen({ bottomInset, onOpenNotifications }: Prop
         </View>
 
         <View className={`mx-5 mt-5 ${row} rounded-2xl bg-white py-4`} style={cardShadow}>
-          <Stat value={stats.total} label={copy.totalRequests} color="text-brand-600" />
-          <View className="w-px bg-slate-100" />
-          <Stat value={stats.open} label={copy.openRequests} color="text-amber-600" />
-          <View className="w-px bg-slate-100" />
-          <Stat value={stats.done} label={copy.completedRequests} color="text-emerald-600" />
+          {stats.map((stat, index) => (
+            <Fragment key={stat.label}>
+              {index > 0 ? <View className="w-px bg-slate-100" /> : null}
+              <Stat value={stat.value} label={stat.label} color={stat.color} />
+            </Fragment>
+          ))}
         </View>
 
         <Section title={copy.personalInfo}>

@@ -56,6 +56,13 @@ export const createCopy = {
     duplicateTitle: 'Similar request found',
     duplicateConfirm: 'Submit anyway',
     submitFailed: "Couldn't submit request",
+    timeTitle: 'Preferred time',
+    photosTitle: 'Photos & description',
+    photosOptional: (max: number) => `Optional · up to ${max}`,
+    addPhoto: 'Add',
+    missingService: 'Please select a service.',
+    missingSlot: 'Please select a time slot, or choose Urgent.',
+    missingDescription: 'Please describe the problem (at least 5 characters).',
   },
   ar: {
     newRequest: 'طلب جديد',
@@ -113,6 +120,13 @@ export const createCopy = {
     duplicateTitle: 'تم العثور على طلب مشابه',
     duplicateConfirm: 'إرسال على أي حال',
     submitFailed: 'تعذر إرسال الطلب',
+    timeTitle: 'الموعد المفضل',
+    photosTitle: 'الصور والوصف',
+    photosOptional: (max: number) => `اختياري · حتى ${max}`,
+    addPhoto: 'إضافة',
+    missingService: 'يرجى اختيار الخدمة.',
+    missingSlot: 'يرجى اختيار موعد، أو اختر عاجل.',
+    missingDescription: 'يرجى وصف المشكلة (5 أحرف على الأقل).',
   },
 };
 

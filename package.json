@@ -25,6 +25,7 @@
     "expo-audio": "~57.0.0",
     "expo-blur": "~57.0.0",
     "expo-build-properties": "^57.0.6",
+    "expo-camera": "~57.0.6",
     "expo-clipboard": "^57.0.1",
     "expo-constants": "~57.0.3",
     "expo-dev-client": "^57.0.9",
@@ -101,7 +102,10 @@
     "autolinking": {
       "ios": {
         "buildFromSource": [
-          "expo-modules-core"
+          "expo-modules-core",
+          "expo-camera",
+          "ExpoCamera",
+          "ExpoCameraBarcodeScanning"
         ]
       }
     }

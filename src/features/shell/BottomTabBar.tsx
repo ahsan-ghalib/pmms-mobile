@@ -5,16 +5,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../../i18n/LanguageContext';
 import { homeCopy } from '../home/homeCopy';
 
-export type TabKey = 'home' | 'requests' | 'notifications' | 'profile';
+export type TabKey = 'home' | 'requests' | 'jobs' | 'notifications' | 'profile';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
+type TabDef = { key: TabKey; icon: IconName; activeIcon: IconName };
 
-const TABS: { key: TabKey; icon: IconName; activeIcon: IconName }[] = [
-  { key: 'home', icon: 'home-outline', activeIcon: 'home' },
-  { key: 'requests', icon: 'document-text-outline', activeIcon: 'document-text' },
+const SHARED_TABS: TabDef[] = [
   { key: 'notifications', icon: 'notifications-outline', activeIcon: 'notifications' },
   { key: 'profile', icon: 'person-outline', activeIcon: 'person' },
 ];
+
+const TABS: Record<'tenant' | 'technician', TabDef[]> = {
+  tenant: [
+    { key: 'home', icon: 'home-outline', activeIcon: 'home' },
+    { key: 'requests', icon: 'document-text-outline', activeIcon: 'document-text' },
+    ...SHARED_TABS,
+  ],
+  technician: [
+    { key: 'home', icon: 'home-outline', activeIcon: 'home' },
+    { key: 'jobs', icon: 'briefcase-outline', activeIcon: 'briefcase' },
+    ...SHARED_TABS,
+  ],
+};
 
 export const TAB_BAR_HEIGHT = 64;
 
@@ -23,14 +35,22 @@ type Props = {
   onChange: (tab: TabKey) => void;
   onCreate: () => void;
   hasUnread: boolean;
+  variant?: 'tenant' | 'technician';
 };
 
-export default function BottomTabBar({ active, onChange, onCreate, hasUnread }: Props) {
+export default function BottomTabBar({
+  active,
+  onChange,
+  onCreate,
+  hasUnread,
+  variant = 'tenant',
+}: Props) {
   const insets = useSafeAreaInsets();
   const { language, font, row } = useLanguage();
   const copy = homeCopy[language];
+  const tabs = TABS[variant];
 
-  const renderTab = (tab: (typeof TABS)[number]) => {
+  const renderTab = (tab: TabDef) => {
     const selected = tab.key === active;
     return (
       <Pressable
@@ -71,7 +91,7 @@ export default function BottomTabBar({ active, onChange, onCreate, hasUnread }: 
       }}
     >
       <View className={`${row} items-end`} style={{ height: TAB_BAR_HEIGHT }}>
-        {TABS.slice(0, 2).map(renderTab)}
+        {tabs.slice(0, 2).map(renderTab)}
         <View className="w-20 items-center">
           <Pressable
             onPress={onCreate}
@@ -87,7 +107,7 @@ export default function BottomTabBar({ active, onChange, onCreate, hasUnread }: 
             <Ionicons name="add" size={30} color="#fff" />
           </Pressable>
         </View>
-        {TABS.slice(2).map(renderTab)}
+        {tabs.slice(2).map(renderTab)}
       </View>
     </View>
   );

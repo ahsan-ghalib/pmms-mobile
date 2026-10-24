@@ -12,9 +12,17 @@ import NewRequestFlow from '../create/NewRequestFlow';
 import { Category } from '../create/useCreateData';
 import RequestDetailScreen from '../requests/RequestDetailScreen';
 import RequestsScreen from '../requests/RequestsScreen';
+import { useAuth } from '../auth/AuthContext';
+import TechnicianShell from '../technician/TechnicianShell';
 import BottomTabBar, { TAB_BAR_HEIGHT, TabKey } from './BottomTabBar';
 
 export default function MainShell() {
+  const { user } = useAuth();
+  if (user?.role === 'technician') return <TechnicianShell />;
+  return <TenantShell />;
+}
+
+function TenantShell() {
   const [tab, setTab] = useState<TabKey>('home');
   const [detailId, setDetailId] = useState<string | null>(null);
   const [creating, setCreating] = useState<{ category?: Category } | null>(null);

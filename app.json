@@ -26,6 +26,13 @@
     "plugins": [
       "./plugins/withSceneDelegate",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to use the camera to scan asset QR codes and barcodes.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "ios": {

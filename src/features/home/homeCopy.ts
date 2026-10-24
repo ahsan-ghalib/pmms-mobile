@@ -56,6 +56,7 @@ export const homeCopy = {
     tabs: {
       home: 'Home',
       requests: 'Requests',
+      jobs: 'Jobs',
       notifications: 'Notifications',
       profile: 'Profile',
     },
@@ -124,7 +125,13 @@ export const homeCopy = {
         cta: 'طلباتي',
       },
     ],
-    tabs: { home: 'الرئيسية', requests: 'الطلبات', notifications: 'الإشعارات', profile: 'حسابي' },
+    tabs: {
+      home: 'الرئيسية',
+      requests: 'الطلبات',
+      jobs: 'المهام',
+      notifications: 'الإشعارات',
+      profile: 'حسابي',
+    },
     status: {
       submitted: 'مُرسل',
       assigned: 'مُسند',

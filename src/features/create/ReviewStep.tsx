@@ -10,7 +10,7 @@ import { slotLabel } from './ScheduleStep';
 import { cardShadow, CategoryTile, localName } from './shared';
 import { Category, Service, Slot } from './useCreateData';
 
-export type StepKey = 'category' | 'service' | 'schedule' | 'photos' | 'review' | 'success';
+export type StepKey = 'category' | 'details' | 'review' | 'success';
 
 type Props = {
   category: Category;
@@ -48,10 +48,10 @@ export default function ReviewStep({
       >
         {localName(category, language)}
       </ReviewRow>
-      <ReviewRow icon="construct-outline" label={copy.service} onPress={() => onEdit('service')}>
+      <ReviewRow icon="construct-outline" label={copy.service} onPress={() => onEdit('details')}>
         {localName(service, language)}
       </ReviewRow>
-      <ReviewRow icon="flag-outline" label={copy.priority} onPress={() => onEdit('service')}>
+      <ReviewRow icon="flag-outline" label={copy.priority} onPress={() => onEdit('details')}>
         <View className={`rounded-md px-2.5 py-1 ${urgent ? 'bg-rose-50' : 'bg-brand-50'}`}>
           <Text
             className={`text-[12px] ${font.bold} ${urgent ? 'text-rose-600' : 'text-brand-600'}`}
@@ -63,7 +63,7 @@ export default function ReviewStep({
       <ReviewRow
         icon="calendar-outline"
         label={copy.dateTime}
-        onPress={urgent ? undefined : () => onEdit('schedule')}
+        onPress={urgent ? undefined : () => onEdit('details')}
       >
         {urgent || !slot
           ? copy.notRequired
@@ -74,7 +74,7 @@ export default function ReviewStep({
           {locationLabel}
         </ReviewRow>
       ) : null}
-      <ReviewRow icon="images-outline" label={copy.photos} onPress={() => onEdit('photos')}>
+      <ReviewRow icon="images-outline" label={copy.photos} onPress={() => onEdit('details')}>
         {photos.length ? (
           <View className="mt-1 flex-row gap-2">
             {photos.map((photo) => (
@@ -93,7 +93,7 @@ export default function ReviewStep({
       <ReviewRow
         icon="document-text-outline"
         label={copy.notes}
-        onPress={() => onEdit('photos')}
+        onPress={() => onEdit('details')}
         last
       >
         {description.trim()}

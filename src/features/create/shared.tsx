@@ -110,6 +110,18 @@ export function SummaryRow({
   );
 }
 
+export function SectionTitle({ number, title }: { number: number; title: string }) {
+  const { font, row, align } = useLanguage();
+  return (
+    <View className={`${row} items-center gap-2.5`}>
+      <View className="h-6 w-6 items-center justify-center rounded-full bg-brand-600">
+        <Text className={`text-[12px] ${font.bold} text-white`}>{number}</Text>
+      </View>
+      <Text className={`flex-1 text-[16px] ${font.bold} text-ink-900 ${align}`}>{title}</Text>
+    </View>
+  );
+}
+
 export function FooterButton({
   label,
   onPress,
